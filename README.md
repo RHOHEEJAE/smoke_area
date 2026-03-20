@@ -28,8 +28,8 @@ npm run dev
 | Name | 설명 |
 |------|------|
 | **`DATABASE_URL`** | Supabase **Connection pooling** URI (예: `postgresql://...@...pooler.supabase.com:6543/postgres`). **Server** 전용 — `NEXT_PUBLIC_` 접두사 금지. |
-| `NEXT_PUBLIC_SUPABASE_URL` | (선택) Realtime용 프로젝트 URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (선택) Realtime용 anon 키 |
+| `NEXT_PUBLIC_SUPABASE_URL` | (선택) Realtime용 **Project URL** (`https://xxxx.supabase.co`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (선택) **Publishable key** (`sb_publishable_...`) 또는 [Legacy](https://supabase.com/docs/guides/api/api-keys) **anon** 키. `createClient` 두 번째 인자는 둘 다 동일하게 넣으면 됩니다. |
 
 2. `DATABASE_URL` 만으로 목록/읽기/쓰기/삭제는 동작합니다. Realtime 변수를 빼면 다른 탭에서 꽁초가 실시간으로는 안 보이고, 새로고침하면 보입니다.
 

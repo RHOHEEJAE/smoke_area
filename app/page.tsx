@@ -17,14 +17,6 @@ export default function HomePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const showRealtimeHint = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return !(
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    );
-  }, []);
-
   const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/butts");
@@ -118,14 +110,6 @@ export default function HomePage() {
       />
 
       <div className="relative z-10 min-h-dvh">
-        {showRealtimeHint && (
-          <p className="mx-auto max-w-lg px-4 pt-6 text-center text-[11px] leading-snug text-alley-cream/40">
-            다른 기기에서 꽁초가 바로 보이게 하려면 Realtime용{" "}
-            <span className="text-alley-cream/55">NEXT_PUBLIC_SUPABASE_*</span> 를
-            Vercel에 추가하세요. DB 접속은 서버 전용{" "}
-            <span className="text-alley-cream/55">DATABASE_URL</span> 만 있으면 됩니다.
-          </p>
-        )}
         {loadError && (
           <div className="mx-auto max-w-lg px-4 pt-6 text-center text-sm text-red-300/90">
             {loadError}
