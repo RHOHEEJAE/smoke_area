@@ -1,19 +1,28 @@
 import { NextResponse } from "next/server";
-import { createRouteHandlerClient } from "@/lib/supabase/admin";
+import { getDb } from "@/lib/db";
 
 export async function GET() {
   try {
-    const supabase = createRouteHandlerClient();
-    const { data, error } = await supabase
-      .from("butts")
-      .select("id, pos_x, pos_y, rotation")
-      .order("created_at", { ascending: true });
+    const sql = getDb();
+    const rows = await sql<{
+      id: string;
+      pos_x: string | number;
+      pos_y: string | number;
+      rotation: string | number;
+    }[]>`
+      select id, pos_x, pos_y, rotation
+      from butts
+      order by created_at asc
+    `;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const butts = rows.map((r) => ({
+      id: r.id,
+      pos_x: Number(r.pos_x),
+      pos_y: Number(r.pos_y),
+      rotation: Number(r.rotation),
+    }));
 
-    return NextResponse.json({ butts: data ?? [] });
+    return NextResponse.json({ butts });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Server error";
     return NextResponse.json({ error: msg }, { status: 500 });
@@ -45,23 +54,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid position" }, { status: 400 });
     }
 
-    const supabase = createRouteHandlerClient();
-    const { data, error } = await supabase
-      .from("butts")
-      .insert({
-        message,
-        pos_x,
-        pos_y,
-        rotation,
-      })
-      .select("id, message, pos_x, pos_y, rotation, created_at")
-      .single();
+    const sql = getDb();
+    const inserted = await sql`
+      insert into butts (message, pos_x, pos_y, rotation)
+      values (${message}, ${pos_x}, ${pos_y}, ${rotation})
+      returning id, message, pos_x, pos_y, rotation, created_at
+    `;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const row = inserted[0] as
+      | {
+          id: string;
+          message: string;
+          pos_x: string | number;
+          pos_y: string | number;
+          rotation: string | number;
+          created_at: Date;
+        }
+      | undefined;
+    if (!row) {
+      return NextResponse.json({ error: "Insert failed" }, { status: 500 });
     }
 
-    return NextResponse.json({ butt: data });
+    const butt = {
+      id: row.id,
+      message: row.message,
+      pos_x: Number(row.pos_x),
+      pos_y: Number(row.pos_y),
+      rotation: Number(row.rotation),
+      created_at: row.created_at,
+    };
+
+    return NextResponse.json({ butt });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Server error";
     return NextResponse.json({ error: msg }, { status: 500 });

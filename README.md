@@ -1,6 +1,6 @@
 # 골목 꽁초판 (Alley Butt Board)
 
-Next.js 14(App Router) + Supabase(PostgreSQL) 익명 메시지 보드입니다. 배경 골목 이미지 위에 꽁초(🚬)를 두고, 한 번 읽고 줍으면 DB에서 사라집니다.
+Next.js 14(App Router) + PostgreSQL(Supabase) 익명 메시지 보드입니다. API는 **`DATABASE_URL`** 로 DB에 직접 접속하고, 브라우저 Realtime만 Supabase JS + 공개 키를 씁니다.
 
 ## 로컬 실행
 
@@ -10,7 +10,7 @@ Next.js 14(App Router) + Supabase(PostgreSQL) 익명 메시지 보드입니다. 
 ```bash
 npm install
 cp .env.local.example .env.local
-# .env.local에 Supabase URL / anon key 입력
+# .env.local 에 DATABASE_URL 필수 (연결 문자열 전체)
 npm run dev
 ```
 
@@ -19,22 +19,21 @@ npm run dev
 
 ## 배경 이미지
 
-`public/alley.jpg` 를 원하는 골목 사진으로 교체하면 됩니다. (현재는 플레이스홀더 이미지)
+`public/alley.jpg` 를 원하는 골목 사진으로 교체하면 됩니다.
 
 ## Vercel 배포
 
-1. GitHub 등에 저장소를 푸시합니다.
-2. [Vercel](https://vercel.com) 에서 해당 저장소를 **Import** 합니다.
-3. **Environment Variables** 에 다음을 추가합니다.
+1. 저장소를 Import 한 뒤 **Environment Variables** 에 추가합니다.
 
-| Name | Value |
-|------|--------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase `anon` `public` 키 |
+| Name | 설명 |
+|------|------|
+| **`DATABASE_URL`** | Supabase **Connection pooling** URI (예: `postgresql://...@...pooler.supabase.com:6543/postgres`). **Server** 전용 — `NEXT_PUBLIC_` 접두사 금지. |
+| `NEXT_PUBLIC_SUPABASE_URL` | (선택) Realtime용 프로젝트 URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (선택) Realtime용 anon 키 |
 
-4. 배포 후 Production URL 로 접속해 동작을 확인합니다.
+2. `DATABASE_URL` 만으로 목록/읽기/쓰기/삭제는 동작합니다. Realtime 변수를 빼면 다른 탭에서 꽁초가 실시간으로는 안 보이고, 새로고침하면 보입니다.
 
-> API Route와 브라우저 Realtime 모두 anon 키를 사용합니다. `schema.sql` 의 RLS 정책이 익명 공개 보드용이므로, 운영 정책에 맞게 정책을 조정하세요.
+3. **보안**: DB 비밀번호가 유출된 적이 있다면 Supabase에서 비밀번호를 바꾼 뒤, Vercel의 `DATABASE_URL` 도 함께 갱신하세요.
 
 ## API 요약
 
@@ -46,4 +45,4 @@ npm run dev
 ## 기술 스택
 
 - Next.js 14, TypeScript, Tailwind CSS
-- Supabase(PostgreSQL + Realtime)
+- `postgres`(서버) + Supabase Pooler, (선택) `@supabase/supabase-js` Realtime
