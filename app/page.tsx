@@ -19,7 +19,7 @@ export default function HomePage() {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/butts");
+      const res = await fetch("/api/butts", { cache: "no-store" });
       const data = (await res.json()) as {
         butts?: ButtPosition[];
         error?: string;
@@ -41,7 +41,7 @@ export default function HomePage() {
     const sync = () => {
       if (document.visibilityState === "visible") void refresh();
     };
-    const interval = window.setInterval(sync, 18_000);
+    const interval = window.setInterval(sync, 4_000);
     document.addEventListener("visibilitychange", sync);
     return () => {
       window.clearInterval(interval);
