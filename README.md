@@ -15,7 +15,8 @@ npm run dev
 ```
 
 3. Supabase SQL Editor에서 `supabase/schema.sql` 실행  
-   - `alter publication supabase_realtime add table butts` 가 이미 등록된 경우 에러가 날 수 있습니다. 대시보드 **Database → Replication** 에서 `butts` Realtime 을 켜 주세요.
+   - `alter publication supabase_realtime add table butts` 가 이미 등록된 경우 에러가 날 수 있습니다. 대시보드 **Database → Replication** 에서 `butts` Realtime 을 켜 주세요.  
+   - **다른 기기에서 꽁초 삭제가 바로 반영되지 않으면** `alter table butts replica identity full;` 를 한 번 실행했는지 확인하세요. (예전에 만든 테이블에는 이 줄이 없을 수 있습니다.)
 
 ## 배경 이미지
 

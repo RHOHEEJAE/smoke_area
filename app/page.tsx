@@ -36,40 +36,70 @@ export default function HomePage() {
     refresh();
   }, [refresh]);
 
+  /** Realtime이 빠져도(특히 DELETE) 어느 정도 맞추기: 탭 활성 + 주기적 목록 재요청 */
+  useEffect(() => {
+    const sync = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    const interval = window.setInterval(sync, 18_000);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, [refresh]);
+
   useEffect(() => {
     const client = getBrowserSupabase();
     if (!client) return;
+
+    function deletedRowId(
+      oldRow: Record<string, unknown> | null | undefined
+    ): string | undefined {
+      if (!oldRow) return undefined;
+      const v = oldRow.id;
+      if (typeof v === "string" && v.length > 0) return v;
+      if (v != null && typeof v !== "object") return String(v);
+      return undefined;
+    }
 
     const channel = client
       .channel("butts-realtime")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "butts" },
+        { event: "*", schema: "public", table: "butts" },
         (payload: RealtimePostgresChangesPayload<ButtRow>) => {
-          const row = payload.new as ButtRow | null;
-          if (!row?.id) return;
-          setButts((prev) => {
-            if (prev.some((b) => b.id === row.id)) return prev;
-            return [
-              ...prev,
-              {
-                id: row.id,
-                pos_x: row.pos_x,
-                pos_y: row.pos_y,
-                rotation: row.rotation,
-              },
-            ];
-          });
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: "butts" },
-        (payload: RealtimePostgresChangesPayload<ButtRow>) => {
-          const oldRow = payload.old as { id?: string } | null;
-          const id = oldRow?.id;
-          if (!id) return;
-          setButts((prev) => prev.filter((b) => b.id !== id));
+          if (payload.eventType === "INSERT") {
+            const row = payload.new as ButtRow | null;
+            if (!row?.id) return;
+            setButts((prev) => {
+              if (prev.some((b) => b.id === row.id)) return prev;
+              return [
+                ...prev,
+                {
+                  id: row.id,
+                  pos_x: Number(row.pos_x),
+                  pos_y: Number(row.pos_y),
+                  rotation: Number(row.rotation),
+                },
+              ];
+            });
+            return;
+          }
+
+          if (payload.eventType === "DELETE") {
+            const ext = payload as typeof payload & {
+              old_record?: Record<string, unknown> | null;
+            };
+            const id =
+              deletedRowId(ext.old as Record<string, unknown> | null) ??
+              deletedRowId(ext.old_record);
+            if (id) {
+              setButts((prev) => prev.filter((b) => b.id !== id));
+            } else {
+              void refresh();
+            }
+          }
         }
       )
       .subscribe();
@@ -77,7 +107,7 @@ export default function HomePage() {
     return () => {
       client.removeChannel(channel);
     };
-  }, []);
+  }, [refresh]);
 
   const statusLine = useMemo(() => {
     const n = butts.length;
