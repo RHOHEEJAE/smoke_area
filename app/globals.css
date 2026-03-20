@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --alley-overlay: rgba(10, 8, 5, 0.45);
+  --alley-cream: #e8e0d0;
+  --alley-brown: #8b6914;
+  --alley-brown-hover: #c4931a;
+}
+
+body {
+  @apply bg-[#0a0805] text-alley-cream antialiased font-coding;
+}
+
+/* 노이즈 질감 오버레이 */
+.alley-noise::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* 줄노트 배경 */
+.lined-paper {
+  background-color: #2a2520;
+  background-image: linear-gradient(
+      transparent 11px,
+      rgba(232, 224, 208, 0.08) 12px
+    ),
+    linear-gradient(90deg, rgba(139, 105, 20, 0.15) 1px, transparent 1px);
+  background-size: 100% 24px, 28px 100%;
+  background-position: 0 4px, 12px 0;
+}
+
+@keyframes smoke-rise {
+  0% {
+    opacity: 0.85;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) scale(2.2);
+  }
+}
