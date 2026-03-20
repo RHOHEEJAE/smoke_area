@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReadButtModal } from "@/components/ReadButtModal";
 import { Toast } from "@/components/Toast";
@@ -23,7 +23,7 @@ import {
 
 type ButtRow = ButtPosition & { message?: string };
 
-export default function HomePage() {
+function HomePageContent() {
   const searchParams = useSearchParams();
   const location = useMemo<PlaceLocation>(() => {
     const q = searchParams.get("location");
@@ -54,7 +54,7 @@ export default function HomePage() {
 
   useEffect(() => {
     refresh();
-  }, [refresh]);
+  }, [refresh, location]);
 
   /** Realtime이 빠져도(특히 DELETE) 어느 정도 맞추기: 탭 활성 + 주기적 목록 재요청 */
   useEffect(() => {
@@ -254,5 +254,13 @@ export default function HomePage() {
       />
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </main>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<main className="min-h-dvh bg-[#0a0805]" />}>
+      <HomePageContent />
+    </Suspense>
   );
 }

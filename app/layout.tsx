@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
+import { Nanum_Gothic_Coding } from "next/font/google";
 import "./globals.css";
+
+const nanumCoding = Nanum_Gothic_Coding({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "골목 꽁초판",
@@ -13,19 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="min-h-screen font-coding">{children}</body>
+      <body className={`${nanumCoding.className} min-h-screen font-coding`}>
+        {children}
+      </body>
     </html>
   );
 }

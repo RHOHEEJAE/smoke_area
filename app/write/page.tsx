@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { SmokeParticles } from "@/components/SmokeParticles";
 import {
   CIGARETTE_BRANDS,
@@ -19,7 +19,7 @@ import {
 
 const MAX = 200;
 
-export default function WritePage() {
+function WritePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const location = useMemo<PlaceLocation>(() => {
@@ -163,7 +163,7 @@ export default function WritePage() {
       </div>
 
       <Link
-        href="/"
+        href={`/?location=${location}`}
         className="fixed left-4 top-4 z-40 rounded-md border border-white/10 bg-[rgba(10,8,5,0.6)] px-3 py-2 text-xs text-alley-cream/80 backdrop-blur-sm transition hover:border-alley-brown/40 hover:text-alley-cream"
       >
         ← 골목으로
@@ -171,5 +171,13 @@ export default function WritePage() {
 
       <SmokeParticles active={smoke} />
     </main>
+  );
+}
+
+export default function WritePage() {
+  return (
+    <Suspense fallback={<main className="min-h-dvh bg-[#0a0805]" />}>
+      <WritePageContent />
+    </Suspense>
   );
 }
