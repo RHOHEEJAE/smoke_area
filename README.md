@@ -39,6 +39,7 @@ npm run dev
 ## API 요약
 
 - `GET /api/butts` — 위치만 목록 반환 (메시지 없음)
+- `GET /api/butts?location=seoul|anyang` — 장소별 위치 목록 반환
 - `POST /api/butts` — 꽁초 생성
 - `GET /api/butts/[id]` — 메시지만 반환
 - `DELETE /api/butts/[id]` — 삭제

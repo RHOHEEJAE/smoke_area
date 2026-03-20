@@ -2,15 +2,33 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ReadButtModal } from "@/components/ReadButtModal";
 import { Toast } from "@/components/Toast";
+import {
+  CIGARETTE_LABEL,
+  CIGARETTE_STYLE,
+  isCigaretteBrand,
+} from "@/lib/cigarette-brands";
 import type { ButtPosition } from "@/lib/types";
 import { getBrowserSupabase } from "@/lib/supabase/browser-client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import {
+  LOCATION_BG,
+  LOCATION_LABEL,
+  LOCATIONS,
+  isPlaceLocation,
+  type PlaceLocation,
+} from "@/lib/locations";
 
 type ButtRow = ButtPosition & { message?: string };
 
 export default function HomePage() {
+  const searchParams = useSearchParams();
+  const location = useMemo<PlaceLocation>(() => {
+    const q = searchParams.get("location");
+    return isPlaceLocation(q) ? q : "seoul";
+  }, [searchParams]);
   const [butts, setButts] = useState<ButtPosition[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -19,7 +37,9 @@ export default function HomePage() {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await fetch("/api/butts", { cache: "no-store" });
+      const res = await fetch(`/api/butts?location=${location}`, {
+        cache: "no-store",
+      });
       const data = (await res.json()) as {
         butts?: ButtPosition[];
         error?: string;
@@ -30,7 +50,7 @@ export default function HomePage() {
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : "오류");
     }
-  }, []);
+  }, [location]);
 
   useEffect(() => {
     refresh();
@@ -67,7 +87,12 @@ export default function HomePage() {
       .channel("butts-realtime")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "butts" },
+        {
+          event: "*",
+          schema: "public",
+          table: "butts",
+          filter: `location=eq.${location}`,
+        },
         (payload: RealtimePostgresChangesPayload<ButtRow>) => {
           if (payload.eventType === "INSERT") {
             const row = payload.new as ButtRow | null;
@@ -78,6 +103,8 @@ export default function HomePage() {
                 ...prev,
                 {
                   id: row.id,
+                  location,
+                  brand: isCigaretteBrand(row.brand) ? row.brand : "marlboro",
                   pos_x: Number(row.pos_x),
                   pos_y: Number(row.pos_y),
                   rotation: Number(row.rotation),
@@ -131,7 +158,7 @@ export default function HomePage() {
       <div
         className="alley-noise absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: "url(/alley.jpg)",
+          backgroundImage: `url(${LOCATION_BG[location]})`,
         }}
       />
       <div
@@ -148,9 +175,25 @@ export default function HomePage() {
 
         {statusLine && (
           <p className="pointer-events-none absolute left-0 right-0 top-6 z-20 px-4 text-center text-sm tracking-wide text-alley-cream/80 drop-shadow md:top-8">
-            {statusLine}
+            {LOCATION_LABEL[location]} · {statusLine}
           </p>
         )}
+
+        <div className="absolute right-3 top-3 z-30 flex gap-2 sm:right-6 sm:top-6">
+          {LOCATIONS.map((item) => (
+            <Link
+              key={item}
+              href={`/?location=${item}`}
+              className={`rounded-md px-3 py-1.5 text-xs transition ${
+                item === location
+                  ? "bg-alley-brown text-[#0a0805]"
+                  : "border border-white/20 bg-[rgba(10,8,5,0.45)] text-alley-cream/85 hover:border-alley-brown/50"
+              }`}
+            >
+              {LOCATION_LABEL[item]}
+            </Link>
+          ))}
+        </div>
 
         <div className="relative mx-auto h-dvh max-w-6xl">
           {butts.map((b) => (
@@ -165,15 +208,17 @@ export default function HomePage() {
                 transform: `translate(-50%, -50%) rotate(${b.rotation}deg)`,
               }}
               aria-label="꽁초 읽기"
+              title={CIGARETTE_LABEL[b.brand]}
             >
-              <span
-                className="select-none text-2xl leading-none opacity-75 transition duration-200 group-hover:scale-[1.3] group-hover:opacity-100"
-                style={{
-                  filter: "none",
-                }}
-              >
-                <span className="transition duration-200 group-hover:drop-shadow-[0_0_6px_#FFD700]">
-                  🚬
+              <span className="relative inline-flex items-center justify-center opacity-75 transition duration-200 group-hover:scale-[1.2] group-hover:opacity-100 group-hover:drop-shadow-[0_0_6px_#FFD700]">
+                <span
+                  className="inline-block h-[8px] w-[22px] rounded-[4px]"
+                  style={{
+                    background: `linear-gradient(90deg, #d68a45 0 26%, ${CIGARETTE_STYLE[b.brand].body} 26% 74%, ${CIGARETTE_STYLE[b.brand].band} 74% 100%)`,
+                  }}
+                />
+                <span className="pointer-events-none absolute -bottom-3 text-[9px] tracking-wide text-alley-cream/70">
+                  {CIGARETTE_STYLE[b.brand].code}
                 </span>
               </span>
             </button>
@@ -182,7 +227,7 @@ export default function HomePage() {
 
         <div className="fixed bottom-0 left-0 right-0 z-30 flex flex-col gap-2 border-t border-white/5 bg-[rgba(10,8,5,0.72)] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm sm:flex-row sm:justify-end sm:gap-3 sm:border-0 sm:bg-transparent sm:p-6 sm:backdrop-blur-none">
           <Link
-            href="/write"
+            href={`/write?location=${location}`}
             className="inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-lg bg-alley-brown px-4 py-3 text-center text-sm font-medium text-[#0a0805] shadow transition hover:bg-alley-brownHover sm:min-w-[160px] sm:py-3"
           >
             <span aria-hidden>🚬</span>

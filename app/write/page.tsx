@@ -1,15 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 import { SmokeParticles } from "@/components/SmokeParticles";
+import {
+  CIGARETTE_BRANDS,
+  CIGARETTE_LABEL,
+  type CigaretteBrand,
+} from "@/lib/cigarette-brands";
+import {
+  LOCATION_BG,
+  LOCATION_LABEL,
+  LOCATIONS,
+  type PlaceLocation,
+  isPlaceLocation,
+} from "@/lib/locations";
 
 const MAX = 200;
 
 export default function WritePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const location = useMemo<PlaceLocation>(() => {
+    const q = searchParams.get("location");
+    return isPlaceLocation(q) ? q : "seoul";
+  }, [searchParams]);
   const [text, setText] = useState("");
+  const [brand, setBrand] = useState<CigaretteBrand>("marlboro");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [smoke, setSmoke] = useState(false);
@@ -17,8 +35,8 @@ export default function WritePage() {
   const len = text.length;
 
   const discard = useCallback(() => {
-    router.push("/");
-  }, [router]);
+    router.push(`/?location=${location}`);
+  }, [router, location]);
 
   async function submit() {
     const message = text.trim();
@@ -35,13 +53,13 @@ export default function WritePage() {
       const res = await fetch("/api/butts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, pos_x, pos_y, rotation }),
+        body: JSON.stringify({ message, brand, location, pos_x, pos_y, rotation }),
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? "저장 실패");
 
       await new Promise((r) => setTimeout(r, 550));
-      router.push("/");
+      router.push(`/?location=${location}`);
     } catch (e) {
       setSmoke(false);
       setError(e instanceof Error ? e.message : "오류");
@@ -54,7 +72,7 @@ export default function WritePage() {
     <main className="relative min-h-dvh w-full overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/alley.jpg)" }}
+        style={{ backgroundImage: `url(${LOCATION_BG[location]})` }}
       />
       <div
         className="absolute inset-0"
@@ -63,8 +81,45 @@ export default function WritePage() {
 
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-lg flex-col px-4 pb-32 pt-10 sm:px-6 sm:pb-28 sm:pt-16">
         <h1 className="mb-6 text-center text-lg tracking-wide text-alley-cream/90">
-          남기고 갈 말
+          {LOCATION_LABEL[location]}에 남기고 갈 말
         </h1>
+
+        <div className="mb-3 flex items-center justify-center gap-2">
+          {LOCATIONS.map((item) => (
+            <Link
+              key={item}
+              href={`/write?location=${item}`}
+              className={`rounded-md px-3 py-1.5 text-xs transition ${
+                item === location
+                  ? "bg-alley-brown text-[#0a0805]"
+                  : "border border-white/15 text-alley-cream/75 hover:border-alley-brown/50"
+              }`}
+            >
+              {LOCATION_LABEL[item]}
+            </Link>
+          ))}
+        </div>
+
+        <div className="mb-3">
+          <label
+            htmlFor="brand"
+            className="mb-2 block text-xs tracking-wide text-alley-cream/70"
+          >
+            담배 종류
+          </label>
+          <select
+            id="brand"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value as CigaretteBrand)}
+            className="h-11 w-full rounded-lg border border-alley-brown/40 bg-[rgba(20,16,12,0.8)] px-3 text-sm text-alley-cream outline-none transition focus:border-alley-brownHover"
+          >
+            {CIGARETTE_BRANDS.map((item) => (
+              <option key={item} value={item} className="bg-[#17130f]">
+                {CIGARETTE_LABEL[item]}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="relative flex-1">
           <label htmlFor="msg" className="sr-only">
@@ -96,7 +151,7 @@ export default function WritePage() {
           disabled={submitting || !text.trim()}
           className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg bg-alley-brown px-4 py-3 text-sm font-medium text-[#0a0805] shadow transition enabled:hover:bg-alley-brownHover disabled:cursor-not-allowed disabled:opacity-45 sm:max-w-xs"
         >
-          {submitting ? "버리는 중…" : "꽁초 버리기"}
+          {submitting ? "버리는 중…" : `${CIGARETTE_LABEL[brand]} 꽁초 버리기`}
         </button>
         <button
           type="button"
