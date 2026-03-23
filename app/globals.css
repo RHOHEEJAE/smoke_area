@@ -46,3 +46,19 @@ body {
     transform: translateY(-100vh) scale(2.2);
   }
 }
+
+@keyframes warm-breath {
+  0% {
+    filter: drop-shadow(0 0 3px rgba(255, 183, 94, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 9px rgba(255, 182, 79, 0.9));
+  }
+  100% {
+    filter: drop-shadow(0 0 3px rgba(255, 183, 94, 0.45));
+  }
+}
+
+.warm-butt {
+  animation: warm-breath 1.8s ease-in-out infinite;
+}

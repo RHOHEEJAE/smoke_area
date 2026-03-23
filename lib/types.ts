@@ -8,4 +8,5 @@ export type ButtPosition = {
   pos_y: number;
   rotation: number;
   brand: CigaretteBrand;
+  warm_until: string | null;
 };

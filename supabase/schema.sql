@@ -6,6 +6,7 @@ create table if not exists butts (
   message text not null,
   brand text not null default 'marlboro',
   location text not null default 'seoul',
+  warm_until timestamptz,
   pos_x float not null,
   pos_y float not null,
   rotation float not null,
@@ -16,6 +17,8 @@ alter table butts
   add column if not exists brand text not null default 'marlboro';
 alter table butts
   add column if not exists location text not null default 'seoul';
+alter table butts
+  add column if not exists warm_until timestamptz;
 
 do $$
 begin
@@ -29,6 +32,17 @@ begin
       check (brand in ('mildseven','marlboro','esse','dunhill','parliament','raison','this','bohem','camel'));
   end if;
 end $$;
+
+create table if not exists butt_comments (
+  id uuid primary key default gen_random_uuid(),
+  butt_id uuid not null references butts(id) on delete cascade,
+  author text not null,
+  content text not null,
+  password_hash text not null,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_butt_comments_butt_id on butt_comments (butt_id);
 
 do $$
 begin

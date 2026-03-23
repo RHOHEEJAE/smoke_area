@@ -16,11 +16,12 @@ export async function GET(request: Request) {
       id: string;
       brand: string;
       location: string;
+      warm_until: Date | string | null;
       pos_x: string | number;
       pos_y: string | number;
       rotation: string | number;
     }[]>`
-      select id, brand, location, pos_x, pos_y, rotation
+      select id, brand, location, warm_until, pos_x, pos_y, rotation
       from butts
       where location = ${location}
       order by created_at asc
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
       id: r.id,
       brand: isCigaretteBrand(r.brand) ? r.brand : "marlboro",
       location: isPlaceLocation(r.location) ? r.location : "seoul",
+      warm_until: r.warm_until ? new Date(r.warm_until).toISOString() : null,
       pos_x: Number(r.pos_x),
       pos_y: Number(r.pos_y),
       rotation: Number(r.rotation),
@@ -105,6 +107,7 @@ export async function POST(request: Request) {
       message: row.message,
       brand: isCigaretteBrand(row.brand) ? row.brand : "marlboro",
       location: isPlaceLocation(row.location) ? row.location : "seoul",
+      warm_until: null,
       pos_x: Number(row.pos_x),
       pos_y: Number(row.pos_y),
       rotation: Number(row.rotation),

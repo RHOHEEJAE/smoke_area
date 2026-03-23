@@ -105,6 +105,7 @@ function HomePageContent() {
                   id: row.id,
                   location,
                   brand: isCigaretteBrand(row.brand) ? row.brand : "marlboro",
+                  warm_until: row.warm_until ?? null,
                   pos_x: Number(row.pos_x),
                   pos_y: Number(row.pos_y),
                   rotation: Number(row.rotation),
@@ -196,33 +197,39 @@ function HomePageContent() {
         </div>
 
         <div className="relative mx-auto h-dvh max-w-6xl">
-          {butts.map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => openModal(b.id)}
-              className="group absolute flex min-h-[44px] min-w-[44px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/70"
-              style={{
-                left: `${b.pos_x}%`,
-                top: `${b.pos_y}%`,
-                transform: `translate(-50%, -50%) rotate(${b.rotation}deg)`,
-              }}
-              aria-label="꽁초 읽기"
-              title={CIGARETTE_LABEL[b.brand]}
-            >
-              <span className="relative inline-flex items-center justify-center opacity-75 transition duration-200 group-hover:scale-[1.2] group-hover:opacity-100 group-hover:drop-shadow-[0_0_6px_#FFD700]">
-                <span
-                  className="inline-block h-[8px] w-[22px] rounded-[4px]"
-                  style={{
-                    background: `linear-gradient(90deg, #d68a45 0 26%, ${CIGARETTE_STYLE[b.brand].body} 26% 74%, ${CIGARETTE_STYLE[b.brand].band} 74% 100%)`,
-                  }}
-                />
-                <span className="pointer-events-none absolute -bottom-3 text-[9px] tracking-wide text-alley-cream/70">
-                  {CIGARETTE_STYLE[b.brand].code}
+          {butts.map((b) => {
+            const isWarm =
+              !!b.warm_until && new Date(b.warm_until).getTime() > Date.now();
+            return (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => openModal(b.id)}
+                className={`group absolute flex min-h-[44px] min-w-[44px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/70 ${
+                  isWarm ? "warm-butt" : ""
+                }`}
+                style={{
+                  left: `${b.pos_x}%`,
+                  top: `${b.pos_y}%`,
+                  transform: `translate(-50%, -50%) rotate(${b.rotation}deg)`,
+                }}
+                aria-label="꽁초 읽기"
+                title={CIGARETTE_LABEL[b.brand]}
+              >
+                <span className="relative inline-flex items-center justify-center opacity-75 transition duration-200 group-hover:scale-[1.2] group-hover:opacity-100 group-hover:drop-shadow-[0_0_6px_#FFD700]">
+                  <span
+                    className="inline-block h-[8px] w-[22px] rounded-[4px]"
+                    style={{
+                      background: `linear-gradient(90deg, #d68a45 0 26%, ${CIGARETTE_STYLE[b.brand].body} 26% 74%, ${CIGARETTE_STYLE[b.brand].band} 74% 100%)`,
+                    }}
+                  />
+                  <span className="pointer-events-none absolute -bottom-3 text-[9px] tracking-wide text-alley-cream/70">
+                    {CIGARETTE_STYLE[b.brand].code}
+                  </span>
                 </span>
-              </span>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         <div className="fixed bottom-0 left-0 right-0 z-30 flex flex-col gap-2 border-t border-white/5 bg-[rgba(10,8,5,0.72)] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm sm:flex-row sm:justify-end sm:gap-3 sm:border-0 sm:bg-transparent sm:p-6 sm:backdrop-blur-none">
@@ -251,6 +258,9 @@ function HomePageContent() {
           setButts((prev) => prev.filter((b) => b.id !== id))
         }
         onToast={setToast}
+        onChanged={() => {
+          void refresh();
+        }}
       />
       <Toast message={toast} onDismiss={() => setToast(null)} />
     </main>
