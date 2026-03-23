@@ -7,7 +7,7 @@ import { ReadButtModal } from "@/components/ReadButtModal";
 import { Toast } from "@/components/Toast";
 import {
   CIGARETTE_LABEL,
-  CIGARETTE_STYLE,
+  CIGARETTE_SPRITE_POS,
   isCigaretteBrand,
 } from "@/lib/cigarette-brands";
 import type { ButtPosition } from "@/lib/types";
@@ -20,6 +20,7 @@ import {
   isPlaceLocation,
   type PlaceLocation,
 } from "@/lib/locations";
+import allModelSprite from "@/all_model.png";
 
 type ButtRow = ButtPosition & { message?: string };
 
@@ -205,7 +206,7 @@ function HomePageContent() {
                 key={b.id}
                 type="button"
                 onClick={() => openModal(b.id)}
-                className={`group absolute flex min-h-[44px] min-w-[44px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/70 ${
+                className={`group absolute flex min-h-[56px] min-w-[56px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD700]/70 ${
                   isWarm ? "warm-butt" : ""
                 }`}
                 style={{
@@ -218,14 +219,13 @@ function HomePageContent() {
               >
                 <span className="relative inline-flex items-center justify-center opacity-75 transition duration-200 group-hover:scale-[1.2] group-hover:opacity-100 group-hover:drop-shadow-[0_0_6px_#FFD700]">
                   <span
-                    className="inline-block h-[8px] w-[22px] rounded-[4px]"
+                    className="inline-block h-[44px] w-[44px] rounded-md bg-contain bg-center bg-no-repeat"
                     style={{
-                      background: `linear-gradient(90deg, #d68a45 0 26%, ${CIGARETTE_STYLE[b.brand].body} 26% 74%, ${CIGARETTE_STYLE[b.brand].band} 74% 100%)`,
+                      backgroundImage: `url(${allModelSprite.src})`,
+                      backgroundSize: "300% 300%",
+                      backgroundPosition: `${CIGARETTE_SPRITE_POS[b.brand].col * 50}% ${CIGARETTE_SPRITE_POS[b.brand].row * 50}%`,
                     }}
                   />
-                  <span className="pointer-events-none absolute -bottom-3 text-[9px] tracking-wide text-alley-cream/70">
-                    {CIGARETTE_STYLE[b.brand].code}
-                  </span>
                 </span>
               </button>
             );

@@ -39,6 +39,21 @@ export const CIGARETTE_STYLE: Record<
   camel: { code: "CM", body: "#f2ead5", band: "#b7782f" },
 };
 
+export const CIGARETTE_SPRITE_POS: Record<
+  CigaretteBrand,
+  { row: 0 | 1 | 2; col: 0 | 1 | 2 }
+> = {
+  mildseven: { row: 0, col: 0 },
+  marlboro: { row: 0, col: 1 },
+  esse: { row: 0, col: 2 },
+  dunhill: { row: 1, col: 0 },
+  parliament: { row: 1, col: 1 },
+  raison: { row: 1, col: 2 },
+  this: { row: 2, col: 0 },
+  bohem: { row: 2, col: 1 },
+  camel: { row: 2, col: 2 },
+};
+
 export function isCigaretteBrand(v: unknown): v is CigaretteBrand {
   return typeof v === "string" && (CIGARETTE_BRANDS as readonly string[]).includes(v);
 }
