@@ -20,7 +20,7 @@ import {
   isPlaceLocation,
   type PlaceLocation,
 } from "@/lib/locations";
-import allModelSprite from "@/all_model.png";
+import allModelSprite from "@/all_model_beter.png";
 
 type ButtRow = ButtPosition & { message?: string };
 
